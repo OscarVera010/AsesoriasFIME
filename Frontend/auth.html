@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - Asesorías FIME</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <nav id="navbarRol" data-rol="public" data-badge="Acceso"></nav>
+
+    <div class="container flex-grow-1 d-flex align-items-center py-5">
+
+        <div class="auth-container-modern w-100 mx-auto" id="authCard" style="max-width: 950px;">
+
+            <!-- PANEL IZQUIERDO: Formularios -->
+            <div class="auth-panel-form d-flex flex-column justify-content-center">
+
+                <!-- 1. FORMULARIO LOGIN -->
+                <div id="form-login" class="fade-transition">
+                    <div class="text-center">
+                        <h2 class="auth-title">Iniciar sesión</h2>
+                        <p class="auth-subtitle">Accede con tu cuenta</p>
+                    </div>
+
+                    <form id="formularioLogin" novalidate>
+                        <div class="mb-2">
+                            <label class="auth-label" for="correoLogin">Matrícula o correo institucional</label>
+                            <input type="text" class="form-control auth-input-modern" id="correoLogin"
+                                   name="credencial" placeholder="matricula o correo@uanl.edu.mx" required>
+                        </div>
+
+                        <div class="mb-2 mt-3">
+                            <label class="auth-label" for="passLogin">Contraseña</label>
+                            <div class="auth-input-group">
+                                <input type="password" class="form-control auth-input-modern" id="passLogin" name="password" required>
+                                <button type="button" class="auth-icon-btn toggle-pass"><i class="bi bi-eye"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-4 mt-3">
+                            <a href="recuperar_password.html" class="auth-link">¿Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <button type="submit" class="auth-btn-submit w-100">ACCEDER</button>
+                    </form>
+                </div>
+
+                <!-- 2. FORMULARIO REGISTRO -->
+                <div id="form-registro" class="fade-transition" style="display: none;">
+                    <div class="text-center">
+                        <h2 class="auth-title">Crear cuenta</h2>
+                        <p class="auth-subtitle">Completa tus datos</p>
+                    </div>
+
+                    <form id="formularioRegistro" novalidate>
+                        <div class="mb-3">
+                            <label class="auth-label" for="regNombre">Nombre completo</label>
+                            <input type="text" class="form-control auth-input-modern" id="regNombre" name="nombre"
+                                   placeholder="Nombre(s) y apellidos" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="auth-label" for="regMatricula">Matrícula</label>
+                            <input type="text" class="form-control auth-input-modern" id="regMatricula" name="matricula"
+                                   pattern="[0-9]{6,8}" maxlength="8" placeholder="6 a 8 dígitos" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="auth-label" for="regCarrera">Carrera</label>
+                            <select class="form-select auth-input-modern" id="regCarrera" name="id_carrera" required>
+                                <option value="" disabled selected>Selecciona tu carrera...</option>
+                                <option value="1">Ingeniería en Tecnología de Software (ITS)</option>
+                                <option value="2">Ingeniería en Administración de Sistemas (IAS)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="auth-label" for="regCorreo">Correo institucional</label>
+                            <input type="email" class="form-control auth-input-modern" id="regCorreo" name="correo"
+                                   placeholder="correo@uanl.edu.mx" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="auth-label" for="regPass">Contraseña</label>
+                            <div class="auth-input-group">
+                                <input type="password" class="form-control auth-input-modern" id="regPass" required>
+                                <button type="button" class="auth-icon-btn toggle-pass"><i class="bi bi-eye"></i></button>
+                            </div>
+                            <div class="auth-strength-box">
+                                <span class="fw-bold">FORTALEZA: —</span>
+                                <ul>
+                                    <li>Al menos 8 caracteres</li>
+                                    <li>Letra minúscula (recomendado)</li>
+                                    <li>Letra mayúscula (recomendado)</li>
+                                    <li>Un número (recomendado)</li>
+                                    <li>Un símbolo (! @ # ...) (recomendado)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="auth-label" for="regConfirm">Confirmar contraseña</label>
+                            <div class="auth-input-group">
+                                <input type="password" class="form-control auth-input-modern" id="regConfirm" required>
+                                <button type="button" class="auth-icon-btn toggle-pass"><i class="bi bi-eye"></i></button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="auth-btn-submit w-100">CREAR CUENTA</button>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- PANEL DERECHO: Mensajes -->
+            <div class="auth-panel-msg d-flex flex-column justify-content-center align-items-center text-center">
+
+                <div id="mensaje-login">
+                    <h2 class="auth-title mb-3" style="font-size: 2.2rem;">¡Hola!</h2>
+                    <p class="text-white mb-5" style="font-size: 0.95rem; line-height: 1.6;">
+                        Regístrate y forma parte de la comunidad de<br>Asesorías FIME.
+                    </p>
+                    <button class="auth-btn-outline" type="button" onclick="toggleAuthPanel()">CREAR CUENTA</button>
+                </div>
+
+                <div id="mensaje-registro" style="display: none;">
+                    <h2 class="auth-title mb-3" style="font-size: 2.2rem;">¡Bienvenido de nuevo!</h2>
+                    <p class="text-white mb-5" style="font-size: 0.95rem; line-height: 1.6;">
+                        Inicia sesión para seguir explorando tutorías y tu<br>perfil.
+                    </p>
+                    <button class="auth-btn-outline" type="button" onclick="toggleAuthPanel()">INICIAR SESIÓN</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-4 mt-auto border-top" style="border-color: var(--input-border);">
+        <p class="text-muted small mb-0">© 2026 Asesorías FIME - Universidad Autónoma de Nuevo León</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        /* ---------- Alternar paneles Login / Registro ---------- */
+        function toggleAuthPanel() {
+            const authCard     = document.getElementById('authCard');
+            const formLogin    = document.getElementById('form-login');
+            const formRegistro = document.getElementById('form-registro');
+            const msgLogin     = document.getElementById('mensaje-login');
+            const msgRegistro  = document.getElementById('mensaje-registro');
+
+            authCard.classList.toggle('reverse');
+
+            if (formLogin.style.display === 'none') {
+                formRegistro.style.display = 'none';
+                msgRegistro.style.display  = 'none';
+                setTimeout(() => {
+                    formLogin.style.display = 'block';
+                    msgLogin.style.display  = 'block';
+                }, 150);
+            } else {
+                formLogin.style.display = 'none';
+                msgLogin.style.display  = 'none';
+                setTimeout(() => {
+                    formRegistro.style.display = 'block';
+                    msgRegistro.style.display  = 'block';
+                }, 150);
+            }
+        }
+
+        /* ---------- Mostrar / ocultar contraseñas ---------- */
+        document.querySelectorAll('.toggle-pass').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                const icon  = this.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.replace('bi-eye', 'bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.replace('bi-eye-slash', 'bi-eye');
+                }
+            });
+        });
+
+        /* ---------- LOGIN ---------- */
+        document.getElementById('formularioLogin').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const credencial = document.getElementById('correoLogin').value.trim();
+            const password   = document.getElementById('passLogin').value;
+
+            if (!credencial || !password) {
+                mostrarToast('Completa todos los campos', 'danger');
+                return;
+            }
+
+            try {
+                const res = await apiFetch('auth/login.php', {
+                    method: 'POST',
+                    body: { credencial, password }
+                });
+                localStorage.setItem('usuarioFIME', JSON.stringify(res.usuario));
+                mostrarToast('Bienvenido ' + res.usuario.nombre, 'success');
+                setTimeout(() => window.location.href = rutaPanel(res.usuario.rol), 600);
+            } catch (err) {
+                mostrarToast(err.message, 'danger');
+            }
+        });
+
+        /* ---------- REGISTRO ---------- */
+        document.getElementById('formularioRegistro').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const nombre     = document.getElementById('regNombre').value.trim();
+            const matricula  = document.getElementById('regMatricula').value.trim();
+            const id_carrera = document.getElementById('regCarrera').value;
+            const correo     = document.getElementById('regCorreo').value.trim();
+            const password   = document.getElementById('regPass').value;
+            const confirm    = document.getElementById('regConfirm').value;
+
+            if (!nombre || !matricula || !id_carrera || !correo || !password) {
+                mostrarToast('Completa todos los campos', 'danger');
+                return;
+            }
+
+            if (password.length < 8) {
+                mostrarToast('La contraseña debe tener al menos 8 caracteres', 'danger');
+                return;
+            }
+
+            if (password !== confirm) {
+                mostrarToast('Las contraseñas no coinciden', 'danger');
+                return;
+            }
+
+            try {
+                const res = await apiFetch('auth/registro.php', {
+                    method: 'POST',
+                    body: { nombre, matricula, id_carrera, correo, password }
+                });
+                mostrarToast(res.mensaje || 'Cuenta creada con éxito. Inicia sesión.', 'success');
+                setTimeout(() => {
+                    toggleAuthPanel();
+                    document.getElementById('formularioRegistro').reset();
+                }, 1000);
+            } catch (err) {
+                mostrarToast(err.message, 'danger');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await apiFetch('catalogos/carreras.php');
+                if (Array.isArray(res.carreras) && res.carreras.length) {
+                    const sel = document.getElementById('regCarrera');
+                    sel.innerHTML = '<option value="" disabled selected>Selecciona tu carrera...</option>' +
+                        res.carreras.map(c => `<option value="${c.id_carrera}">${c.nombre} (${c.clave})</option>`).join('');
+                }
+            } catch (err) {}
+        });
+    </script>
+</body>
+</html>
