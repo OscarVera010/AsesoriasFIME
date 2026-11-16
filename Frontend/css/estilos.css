@@ -1,0 +1,10 @@
+/* ==========================================
+   css/estilos.css — Punto de entrada
+   Importa todos los módulos en orden correcto
+   (variables primero, luego base, luego UI)
+========================================== */
+
+@import url('variables.css');
+@import url('componentes.css');
+@import url('navbar.css');
+@import url('auth.css');

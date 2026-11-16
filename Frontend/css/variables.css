@@ -1,0 +1,91 @@
+/* ==========================================
+   css/variables.css
+   Variables globales, base del body,
+   tipografía y modo oscuro
+========================================== */
+
+/* ---------- 1. VARIABLES LIGHT ---------- */
+:root {
+    --bg-body:           #f4f7f6;
+    --panel-izq:         #ffffff;
+    --text-main:         #212529;
+    --text-muted:        #6c757d;
+    --input-bg:          #ffffff;
+    --input-border:      #ced4da;
+    --input-text:        #212529;
+    --fortaleza-bg:      #f8f9fa;
+
+    --fime-verde:        #00b065;
+    --fime-verde-oscuro: #008f52;
+    --fime-rojo:         #dc3545;
+    --fime-amarillo:     #ffc107;
+    --fime-azul:         #0d6efd;
+
+    --sombra-tarjeta:
+        0 1px 2px rgba(0, 0, 0, .04),
+        0 8px 24px rgba(0, 176, 101, .10);
+    --sombra-hover:
+        0 4px 8px rgba(0, 0, 0, .06),
+        0 16px 40px rgba(0, 176, 101, .18);
+
+    --radius-card:       14px;
+    --radius-btn:        50rem;
+
+    --font-headers:      'Space Grotesk', sans-serif;
+    --font-body:         'Inter', sans-serif;
+}
+
+/* ---------- 2. VARIABLES DARK ---------- */
+body.dark-mode {
+    --bg-body:      #1a202c;
+    --panel-izq:    #2d3748;
+    --text-main:    #ffffff;
+    --text-muted:   #a0aec0;
+    --input-bg:     #1a202c;
+    --input-border: #4a5568;
+    --input-text:   #ffffff;
+    --fortaleza-bg: #1a202c;
+
+    --sombra-tarjeta:
+        0 1px 2px rgba(0, 0, 0, .4),
+        0 8px 24px rgba(0, 0, 0, .5);
+    --sombra-hover:
+        0 4px 8px rgba(0, 0, 0, .5),
+        0 16px 40px rgba(0, 0, 0, .6);
+}
+
+/* ---------- 3. BASE ---------- */
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: background-color .4s ease, color .4s ease;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: var(--font-headers);
+    letter-spacing: -.5px;
+}
+
+/* ---------- 4. MODO OSCURO: refuerzos globales ---------- */
+body.dark-mode .text-dark,
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+    color: var(--text-main) !important;
+}
+body.dark-mode .text-muted,
+body.dark-mode small.text-muted,
+body.dark-mode .text-muted-custom {
+    color: #b8c5d6 !important;
+}
+body.dark-mode .bg-light {
+    background-color: var(--panel-izq) !important;
+    color: var(--text-main) !important;
+    border-color: var(--input-border) !important;
+}
+body.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
