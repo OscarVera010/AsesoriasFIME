@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración - Catálogo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+    <nav id="navbarRol" data-rol="admin" data-badge="Catálogo"></nav>
+
+    <div class="container mt-5 flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold text-dark">Catálogo Oficial de Materias</h2>
+                <p class="text-muted mb-0">Materias disponibles globalmente para asignar a los tutores.</p>
+            </div>
+            <button class="btn btn-danger" onclick="abrirModalNuevaMateria()">Registrar Materia</button>
+        </div>
+
+        <div class="card card-fime border-0 shadow-sm p-3">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="background-color: transparent;">
+                    <thead style="border-bottom: 2px solid var(--input-border);">
+                        <tr>
+                            <th class="py-3 px-3 text-dark">Clave</th>
+                            <th class="py-3 px-3 text-dark">Nombre Oficial</th>
+                            <th class="py-3 px-3 text-dark">Descripción Temática Oficial</th>
+                            <th class="py-3 px-3 text-dark text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCatalogo"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva / Editar Materia -->
+    <div class="modal fade" id="modalNuevaMateria" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content card-fime">
+                <div class="modal-header card-header-fime" style="background-color: #dc3545;">
+                    <h5 class="modal-title text-white" id="tituloModalCatalogo">Registrar Materia Oficial</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formCatalogo" novalidate>
+                        <input type="hidden" id="catIdMateria" name="id_materia" value="">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark" for="catClave">Clave de la Materia</label>
+                            <input type="text" class="form-control form-control-custom" id="catClave" name="clave" maxlength="10" placeholder="Ej. MAT202" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark" for="catNombre">Nombre Completo</label>
+                            <input type="text" class="form-control form-control-custom" id="catNombre" name="nombre" maxlength="100" placeholder="Ej. Ecuaciones Diferenciales" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark" for="catDescripcion">Descripción Temática</label>
+                            <textarea class="form-control form-control-custom" id="catDescripcion" name="descripcion" maxlength="200" rows="3" placeholder="Temas principales cubiertos por la materia..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Guardar en el Catálogo</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+    function renderCatalogo(materias = []) {
+        const tbody = document.getElementById('tablaCatalogo');
+        if (!materias.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state py-4">
+                            <i class="bi bi-journal-bookmark"></i>
+                            <h5>Catálogo vacío</h5>
+                            <p class="small mb-0">Registra la primera materia oficial del catálogo FIME.</p>
+                        </div>
+                    </td>
+                </tr>`;
+            return;
+        }
+        tbody.innerHTML = materias.map(m => `
+            <tr>
+                <td class="px-3 fw-bold text-muted">${m.clave}</td>
+                <td class="px-3 fw-bold text-dark">${m.nombre}</td>
+                <td class="px-3 text-muted small">${m.descripcion || '—'}</td>
+                <td class="px-3 text-center">
+                    <button class="btn btn-outline-secondary btn-sm mx-1" onclick='editarMateria(${JSON.stringify(m)})'>Editar</button>
+                    <button class="btn btn-outline-danger btn-sm mx-1" onclick="eliminarMateria(${m.id_materia}, '${m.nombre}')">Eliminar</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function abrirModalNuevaMateria() {
+        document.getElementById('formCatalogo').reset();
+        document.getElementById('catIdMateria').value = '';
+        document.getElementById('tituloModalCatalogo').textContent = 'Registrar Materia Oficial';
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalNuevaMateria')).show();
+    }
+
+    function editarMateria(m) {
+        document.getElementById('catIdMateria').value = m.id_materia;
+        document.getElementById('catClave').value = m.clave;
+        document.getElementById('catNombre').value = m.nombre;
+        document.getElementById('catDescripcion').value = m.descripcion || '';
+        document.getElementById('tituloModalCatalogo').textContent = 'Editar Materia Oficial';
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalNuevaMateria')).show();
+    }
+
+    async function cargarCatalogo() {
+        try {
+            const res = await apiFetch('admin/catalogo.php');
+            renderCatalogo(res.materias || []);
+        } catch (err) {
+            renderCatalogo([]);
+            mostrarToast(err.message, 'danger');
+        }
+    }
+
+    async function eliminarMateria(idMateria, nombre) {
+        if (!confirm(`¿Eliminar "${nombre}" del catálogo?`)) return;
+        try {
+            const res = await apiFetch('admin/catalogo.php', {
+                method: 'DELETE',
+                body: { id_materia: idMateria }
+            });
+            mostrarToast(res.mensaje || 'Materia eliminada.', 'success');
+            await cargarCatalogo();
+        } catch (err) {
+            mostrarToast(err.message, 'danger');
+        }
+    }
+
+    document.getElementById('formCatalogo').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const idMateria = document.getElementById('catIdMateria').value;
+        const payload = {
+            id_materia:  idMateria ? Number(idMateria) : 0,
+            clave:       document.getElementById('catClave').value.trim(),
+            nombre:      document.getElementById('catNombre').value.trim(),
+            descripcion: document.getElementById('catDescripcion').value.trim()
+        };
+
+        try {
+            const res = await apiFetch('admin/catalogo.php', {
+                method: idMateria ? 'PUT' : 'POST',
+                body: payload
+            });
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalNuevaMateria')).hide();
+            mostrarToast(res.mensaje || 'Catálogo actualizado.', 'success');
+            this.reset();
+            await cargarCatalogo();
+        } catch (err) {
+            mostrarToast(err.message, 'danger');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', cargarCatalogo);
+    </script>
+</body>
+</html>

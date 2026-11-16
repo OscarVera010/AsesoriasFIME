@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración - Solicitudes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+    <nav id="navbarRol" data-rol="admin" data-badge="Solicitudes"></nav>
+
+    <div class="container mt-5 flex-grow-1">
+        <div class="mb-4">
+            <h2 class="fw-bold text-dark">Gestión de Aspirantes a Tutor</h2>
+            <p class="text-muted">Revisa los expedientes de los alumnos que enviaron su solicitud.</p>
+        </div>
+
+        <div class="card card-fime border-0 shadow-sm p-3">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="background-color: transparent;">
+                    <thead style="border-bottom: 2px solid var(--input-border);">
+                        <tr>
+                            <th class="py-3 px-3 text-dark">Aspirante</th>
+                            <th class="py-3 px-3 text-dark">Carrera</th>
+                            <th class="py-3 px-3 text-dark">Materias Propuestas</th>
+                            <th class="py-3 px-3 text-dark text-center">Expediente</th>
+                            <th class="py-3 px-3 text-dark text-center">Dictamen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaSolicitudes"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        function renderSolicitudes(solicitudes = []) {
+            const tbody = document.getElementById('tablaSolicitudes');
+            if (!solicitudes.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state py-4">
+                                <i class="bi bi-inbox"></i>
+                                <h5>No hay solicitudes pendientes</h5>
+                                <p class="small mb-0">Cuando los estudiantes envíen su Kardex aparecerán aquí.</p>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+            tbody.innerHTML = solicitudes.map(s => `
+                <tr>
+                    <td class="px-3 text-dark">
+                        <span class="fw-bold">${s.nombre}</span><br>
+                        <small class="text-muted">${s.matricula}</small>
+                    </td>
+                    <td class="px-3 text-dark">${s.carrera || '—'}</td>
+                    <td class="px-3 text-muted">${(s.materias || []).join(', ')}</td>
+                    <td class="px-3 text-center">
+                        <a href="${apiUrl('admin/ver_kardex.php?id=' + s.id_solicitud)}" target="_blank" class="btn btn-outline-secondary btn-sm">Kardex PDF</a>
+                    </td>
+                    <td class="px-3 text-center">
+                        ${Number(s.id_estado) === 1
+                            ? `<button class="btn btn-success btn-sm mx-1" onclick="dictaminar(${s.id_solicitud}, 'aprobar')">Aprobar</button>
+                               <button class="btn btn-danger btn-sm mx-1" onclick="dictaminar(${s.id_solicitud}, 'rechazar')">Rechazar</button>`
+                            : `<span class="badge ${Number(s.id_estado) === 2 ? 'text-bg-success' : 'text-bg-danger'}">${s.estado}</span>`}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function cargarSolicitudes() {
+            try {
+                const res = await apiFetch('admin/solicitudes.php');
+                renderSolicitudes(res.solicitudes || []);
+            } catch (err) {
+                renderSolicitudes([]);
+                mostrarToast(err.message, 'danger');
+            }
+        }
+
+        async function dictaminar(idSolicitud, accion) {
+            try {
+                const res = await apiFetch('admin/solicitudes.php', {
+                    method: 'POST',
+                    body: { id_solicitud: idSolicitud, accion }
+                });
+                mostrarToast(res.mensaje || 'Dictamen guardado.', accion === 'aprobar' ? 'success' : 'danger');
+                await cargarSolicitudes();
+            } catch (err) {
+                mostrarToast(err.message, 'danger');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarSolicitudes);
+    </script>
+</body>
+</html>

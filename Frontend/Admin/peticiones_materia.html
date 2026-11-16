@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peticiones de Materia - Jefatura</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+    <nav id="navbarRol" data-rol="admin" data-badge="Peticiones de Materia"></nav>
+
+    <div class="container mt-5 flex-grow-1">
+
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold">Peticiones de Materia</h2>
+                <p class="text-muted mb-0">
+                    Solicitudes enviadas por estudiantes pidiendo abrir nuevas tutorías.
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <span id="contadorPendientes" class="badge bg-warning text-dark fs-6">0 pendientes</span>
+                <button class="btn btn-outline-secondary btn-sm" onclick="limpiarRevisadas()">
+                    <i class="bi bi-trash me-1"></i> Limpiar revisadas
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="mb-4 d-flex gap-2 flex-wrap">
+            <button class="btn btn-neon btn-sm filtro-peticion active" data-filtro="todas">Todas</button>
+            <button class="btn btn-neon btn-sm filtro-peticion" data-filtro="pendiente">Pendientes</button>
+            <button class="btn btn-neon btn-sm filtro-peticion" data-filtro="aprobada">Aprobadas</button>
+            <button class="btn btn-neon btn-sm filtro-peticion" data-filtro="rechazada">Rechazadas</button>
+        </div>
+
+        <!-- Lista -->
+        <div id="listaPeticiones"></div>
+
+    </div>
+
+    <footer class="text-center py-4 mt-5 border-top" style="border-color: var(--input-border);">
+        <p class="text-muted small mb-0">© 2026 Asesorías FIME - Universidad Autónoma de Nuevo León</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        let peticiones = [];
+
+        function badgeUrgencia(u) {
+            const map = {
+                'Normal':  'text-bg-secondary',
+                'Alta':    'text-bg-warning text-dark',
+                'Crítica': 'text-bg-danger'
+            };
+            return `<span class="badge ${map[u] || 'text-bg-secondary'}">${u || 'Normal'}</span>`;
+        }
+
+        function badgeEstado(e) {
+            const val = (e || 'pendiente').toLowerCase();
+            const map = {
+                'pendiente': 'text-bg-warning text-dark',
+                'aprobada':  'text-bg-success',
+                'rechazada': 'text-bg-danger'
+            };
+            return `<span class="badge ${map[val] || 'text-bg-secondary'}">${val}</span>`;
+        }
+
+        /* ---------- Render ---------- */
+        function render(data = peticiones) {
+            const cont = document.getElementById('listaPeticiones');
+            const pendientes = data.filter(p => (p.estado || 'pendiente').toLowerCase() === 'pendiente').length;
+
+            document.getElementById('contadorPendientes').textContent =
+                `${pendientes} pendiente${pendientes === 1 ? '' : 's'}`;
+
+            if (!data.length) {
+                cont.innerHTML = `
+                    <div class="fime-card p-5">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <h5>No hay peticiones aún</h5>
+                            <p class="small mb-0">
+                                Cuando un estudiante pida una materia nueva, aparecerá aquí.
+                            </p>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            cont.innerHTML = data.map(p => {
+                const estado = (p.estado || 'pendiente').toLowerCase();
+                const esPendiente = estado === 'pendiente';
+
+                return `
+                    <div class="fime-card mb-3 peticion-item" data-estado="${estado}">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-1">
+                                        <i class="bi bi-journal-plus me-2" style="color: var(--fime-verde);"></i>
+                                        ${p.nombre_materia}
+                                    </h5>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap small text-muted">
+                                        <span><i class="bi bi-calendar3 me-1"></i>${p.fecha}</span>
+                                        <span>·</span>
+                                        <span>Semestre sugerido: <strong>${p.semestre || 'No especificado'}</strong></span>
+                                        <span>·</span>
+                                        ${badgeUrgencia(p.urgencia)}
+                                    </div>
+                                </div>
+                                ${badgeEstado(estado)}
+                            </div>
+
+                            ${p.comentarios
+                                ? `<div class="info-box mb-3">
+                                       <small class="text-muted d-block mb-1">
+                                           <i class="bi bi-chat-left-text me-1"></i>Comentarios del estudiante:
+                                       </small>
+                                       <div>${p.comentarios}</div>
+                                   </div>`
+                                : ''}
+
+                            <div class="d-flex gap-2 flex-wrap">
+                                ${esPendiente
+                                    ? `<button class="btn btn-sm btn-success"
+                                                onclick="aprobar(${p.id_peticion})">
+                                            <i class="bi bi-check2 me-1"></i>Aprobar y abrir tutoría
+                                       </button>
+                                       <button class="btn btn-sm btn-outline-danger"
+                                                onclick="rechazar(${p.id_peticion})">
+                                            <i class="bi bi-x me-1"></i>Rechazar
+                                       </button>`
+                                    : `<button class="btn btn-sm btn-outline-secondary" disabled>
+                                           ${estado === 'aprobada' ? '✓ Aprobada' : '✗ Rechazada'}
+                                       </button>
+                                       <button class="btn btn-sm btn-outline-danger"
+                                                onclick="eliminar(${p.id_peticion})">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                       </button>`}
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        async function cargarPeticiones() {
+            try {
+                const res = await apiFetch('admin/peticiones.php');
+                peticiones = res.peticiones || [];
+                render(peticiones);
+            } catch (err) {
+                peticiones = [];
+                render([]);
+                mostrarToast(err.message, 'danger');
+            }
+        }
+
+        /* ---------- Acciones ---------- */
+        async function aprobar(idPeticion) {
+            try {
+                const res = await apiFetch('admin/peticiones.php', {
+                    method: 'PATCH',
+                    body: { id_peticion: idPeticion, id_estado: 2 }
+                });
+                mostrarToast(res.mensaje || 'Petición aprobada.', 'success');
+                await cargarPeticiones();
+            } catch (err) {
+                mostrarToast(err.message, 'danger');
+            }
+        }
+
+        async function rechazar(idPeticion) {
+            try {
+                const res = await apiFetch('admin/peticiones.php', {
+                    method: 'PATCH',
+                    body: { id_peticion: idPeticion, id_estado: 3 }
+                });
+                mostrarToast(res.mensaje || 'Petición rechazada.', 'danger');
+                await cargarPeticiones();
+            } catch (err) {
+                mostrarToast(err.message, 'danger');
+            }
+        }
+
+        async function eliminar(idPeticion) {
+            try {
+                const res = await apiFetch('admin/peticiones.php', {
+                    method: 'DELETE',
+                    body: { id_peticion: idPeticion }
+                });
+                mostrarToast(res.mensaje || 'Petición eliminada.', 'success');
+                await cargarPeticiones();
+            } catch (err) {
+                mostrarToast(err.message, 'danger');
+            }
+        }
+
+        async function limpiarRevisadas() {
+            try {
+                const res = await apiFetch('admin/peticiones.php?limpiar=1', {
+                    method: 'DELETE'
+                });
+                mostrarToast(res.mensaje || 'Peticiones revisadas eliminadas.', 'success');
+                await cargarPeticiones();
+            } catch (err) {
+                mostrarToast(err.message, 'danger');
+            }
+        }
+
+        /* ---------- Filtros ---------- */
+        document.querySelectorAll('.filtro-peticion').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filtro-peticion').forEach(b => b.classList.remove('fw-bold'));
+                btn.classList.add('fw-bold');
+                const f = btn.dataset.filtro;
+                document.querySelectorAll('.peticion-item').forEach(el => {
+                    el.style.display = (f === 'todas' || el.dataset.estado === f) ? '' : 'none';
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', cargarPeticiones);
+    </script>
+</body>
+</html>
