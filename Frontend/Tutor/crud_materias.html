@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Materias - Tutor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+    
+    <nav id="navbarRol" data-rol="tutor" data-badge="Materias Ofertadas"></nav>
+
+    <div class="container mt-5 flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold text-dark">Materias Ofertadas</h2>
+                <p class="text-muted">Solo puedes publicar asesorías de las materias autorizadas por Jefatura.</p>
+            </div>
+            <button class="btn btn-fime-primary" data-bs-toggle="modal" data-bs-target="#modalCrearTema">
+                <i class="bi bi-journal-plus me-1"></i> Añadir Materia a mi Perfil
+            </button>
+        </div>
+
+        <div class="card card-fime border-0 shadow-sm p-3">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="background-color: transparent;">
+                    <thead style="border-bottom: 2px solid var(--input-border);">
+                        <tr>
+                            <th class="py-3 px-4 text-dark">Materia Autorizada</th>
+                            <th class="py-3 px-4 text-dark">Descripción Oficial del Catálogo</th>
+                            <th class="py-3 px-4 text-dark text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaMateriasTutor"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal CREATE RESTRINGIDO (Sin campo de enfoque libre) -->
+    <div class="modal fade" id="modalCrearTema" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content card-fime">
+                <div class="modal-header card-header-fime">
+                    <h5 class="modal-title text-white">Añadir Materia a tu Perfil</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formMateria">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark" for="selectMateriaAutorizada">Materia Autorizada (Aprobada por Jefatura)</label>
+                            <select class="form-select form-select-custom" id="selectMateriaAutorizada" name="id_materia" required>
+                                <option value="" disabled selected>Selecciona una materia autorizada...</option>
+                            </select>
+                            <div class="form-text text-muted small mt-2">
+                                La descripción temática se toma automáticamente del catálogo oficial. Si deseas impartir otra materia, solicita autorización enviando tu Kardex a Jefatura.
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-fime-primary w-100 fw-bold">Publicar en mi perfil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-4 mt-5 border-top" style="border-color: var(--input-border);">
+        <p class="text-muted small mb-0">© 2026 Asesorías FIME - Universidad Autónoma de Nuevo León</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+    function renderMateriasTutor(materias = []) {
+        const tbody = document.getElementById('tablaMateriasTutor');
+        if (!materias.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3">
+                        <div class="empty-state py-4">
+                            <i class="bi bi-journal-x"></i>
+                            <h5>No tienes materias publicadas</h5>
+                            <p class="small mb-0">Añade una de tus materias autorizadas por Jefatura para comenzar.</p>
+                        </div>
+                    </td>
+                </tr>`;
+            return;
+        }
+        tbody.innerHTML = materias.map(m => `
+            <tr>
+                <td class="px-4 fw-bold text-dark">${m.nombre}</td>
+                <td class="px-4 text-muted">${m.descripcion || 'Sin descripción oficial'}</td>
+                <td class="px-4 text-center">
+                    <button class="btn btn-outline-danger btn-sm mx-1" onclick="dejarDeImpartir(${m.id_materia}, '${m.nombre}')">
+                        <i class="bi bi-trash me-1"></i> Dejar de impartir
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderSelectAutorizadas(materias = []) {
+        const select = document.getElementById('selectMateriaAutorizada');
+        select.innerHTML = `<option value="" disabled selected>Selecciona una materia autorizada...</option>` +
+            materias.map(m => `<option value="${m.id_materia}">${m.nombre}</option>`).join('');
+    }
+
+    async function cargarMateriasTutor() {
+        try {
+            const res = await apiFetch('tutor/materias.php');
+            renderMateriasTutor(res.publicadas || []);
+            renderSelectAutorizadas(res.disponibles || []);
+        } catch (err) {
+            renderMateriasTutor([]);
+            renderSelectAutorizadas([]);
+            mostrarToast(err.message, 'danger');
+        }
+    }
+
+    document.getElementById('formMateria').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const id_materia = Number(document.getElementById('selectMateriaAutorizada').value);
+        if (!id_materia) return;
+
+        try {
+            const res = await apiFetch('tutor/materias.php', {
+                method: 'POST',
+                body: { id_materia }
+            });
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCrearTema')).hide();
+            mostrarToast(res.mensaje || 'Materia publicada.', 'success');
+            await cargarMateriasTutor();
+        } catch (err) {
+            mostrarToast(err.message, 'danger');
+        }
+    });
+
+    async function dejarDeImpartir(idMateria, nombre) {
+        if (!confirm(`¿Dejar de impartir ${nombre}? Se despublicará de tu perfil y se eliminarán tus horarios futuros asignados a ella.`)) return;
+        try {
+            const res = await apiFetch('tutor/materias.php', {
+                method: 'DELETE',
+                body: { id_materia: idMateria }
+            });
+            mostrarToast(res.mensaje || `Has dejado de impartir ${nombre}.`, 'success');
+            await cargarMateriasTutor();
+        } catch (err) {
+            mostrarToast(err.message, 'danger');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarMateriasTutor);
+    </script>
+</body>
+</html>

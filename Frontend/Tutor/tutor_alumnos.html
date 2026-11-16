@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Alumnos - Tutor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+    <nav id="navbarRol" data-rol="tutor" data-badge="Mis Alumnos"></nav>
+
+    <div class="container mt-5 flex-grow-1">
+
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold">Lista de Alumnos por Clase</h2>
+                <p class="text-muted mb-0">Alumnos agrupados por materia y horario. Así tomas asistencia sin perderte.</p>
+            </div>
+            <button class="btn btn-outline-secondary" onclick="mostrarToast('Generando PDF...', 'success')">
+                <i class="bi bi-file-earmark-pdf me-1"></i> Descargar Todo
+            </button>
+        </div>
+
+        <!-- Filtros rápidos -->
+        <div class="mb-4 d-flex gap-2 flex-wrap">
+            <button class="btn btn-neon btn-sm filtro-grupo active" data-filtro="todos">
+                <i class="bi bi-grid me-1"></i> Todas las clases
+            </button>
+            <button class="btn btn-neon btn-sm filtro-grupo" data-filtro="pendientes">
+                <i class="bi bi-clock me-1"></i> Con asistencia pendiente
+            </button>
+            <button class="btn btn-neon btn-sm filtro-grupo" data-filtro="completos">
+                <i class="bi bi-check2-circle me-1"></i> Asistencia completa
+            </button>
+        </div>
+
+        <!-- Contenedor de clases -->
+        <div id="listaClases"></div>
+
+    </div>
+
+    <footer class="text-center py-4 mt-5 border-top" style="border-color: var(--input-border);">
+        <p class="text-muted small mb-0">© 2026 Asesorías FIME - Universidad Autónoma de Nuevo León</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        /* ==========================================================
+           LISTA DE CLASES (se llena desde el backend)
+           ========================================================== */
+        let clases = [];
+
+        /* ---------- Render de una clase ---------- */
+        function claseHTML(clase, idx) {
+            const total = clase.alumnos.length;
+            const asistieron = clase.alumnos.filter(a => a.estado === 'asistio').length;
+            const pendientes = total - asistieron;
+            const completo = total > 0 && pendientes === 0;
+
+            const badgeClass = total === 0
+                ? 'bg-secondary'
+                : (completo ? 'bg-success' : 'bg-warning text-dark');
+
+            const badgeText = total === 0
+                ? 'Sin alumnos'
+                : `${asistieron}/${total} asistieron`;
+
+            const filtroEstado = total === 0 ? 'vacio'
+                              : (completo ? 'completos' : 'pendientes');
+
+            // Tabla de alumnos
+            let cuerpoTabla;
+            if (total === 0) {
+                cuerpoTabla = `
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state py-4">
+                                <i class="bi bi-inbox"></i>
+                                <h5>Aún no hay alumnos</h5>
+                                <p class="small mb-0">Cuando alguien reserve esta clase aparecerá aquí.</p>
+                            </div>
+                        </td>
+                    </tr>`;
+            } else {
+                cuerpoTabla = clase.alumnos.map(a => {
+                    const esAsistio = a.estado === 'asistio';
+                    return `
+                        <tr>
+                            <td class="fw-bold">${a.nombre}</td>
+                            <td class="text-muted">${a.matricula}</td>
+                            <td class="text-center">
+                                <span class="badge ${esAsistio ? 'text-bg-success' : 'text-bg-warning text-dark'}">
+                                    ${esAsistio ? 'Asistió' : 'Pendiente'}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                ${esAsistio
+                                    ? `<button class="btn btn-sm btn-outline-secondary" disabled>
+                                           <i class="bi bi-check2 me-1"></i>Registrada
+                                       </button>`
+                                    : `<button class="btn btn-sm btn-success"
+                                               onclick="marcarAsistencia(${clase.id_horario}, ${a.id_estudiante})">
+                                           <i class="bi bi-check2-circle me-1"></i>Marcar Asistencia
+                                       </button>`}
+                            </td>
+                        </tr>`;
+                }).join('');
+            }
+
+            return `
+                <div class="fime-card mb-4 grupo-clase" data-estado="${filtroEstado}">
+                    <div class="card-header-fime px-4 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h5 class="mb-0 fw-bold">${clase.materia}</h5>
+                            <small style="opacity:.9;">
+                                <i class="bi bi-calendar3 me-1"></i>${clase.dia}
+                                · <i class="bi bi-clock me-1"></i>${clase.turno} (${clase.hora})
+                            </small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge ${badgeClass}">${badgeText}</span>
+                            <button class="btn btn-sm btn-light"
+                                    onclick="mostrarToast('Generando PDF de ${clase.materia}...', 'success')"
+                                    title="Descargar clase">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="py-3 ps-4">Alumno</th>
+                                        <th class="py-3">Matrícula</th>
+                                        <th class="py-3 text-center">Estado</th>
+                                        <th class="py-3 text-center pe-4">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${cuerpoTabla}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        /* ---------- Render de todas las clases ---------- */
+        function renderClases() {
+            const cont = document.getElementById('listaClases');
+            if (!clases.length) {
+                cont.innerHTML = `
+                    <div class="fime-card p-5">
+                        <div class="empty-state">
+                            <i class="bi bi-people"></i>
+                            <h5>No tienes clases programadas</h5>
+                            <p class="small mb-0">Cuando abras horarios y los alumnos agenden, aparecerán aquí.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+            cont.innerHTML = clases.map((c, i) => claseHTML(c, i)).join('');
+        }
+
+        async function cargarClases() {
+            try {
+                const res = await apiFetch('tutor/alumnos_asistencia.php');
+                clases = res.clases || [];
+                renderClases();
+            } catch (err) {
+                clases = [];
+                renderClases();
+                mostrarToast(err.message, 'danger');
+            }
+        }
+
+        /* ---------- Marcar asistencia ---------- */
+        async function marcarAsistencia(idHorario, idEstudiante) {
+            try {
+                const res = await apiFetch('tutor/alumnos_asistencia.php', {
+                    method: 'PATCH',
+                    body: { id_horario: idHorario, id_estudiante: idEstudiante }
+                });
+                mostrarToast(res.mensaje || 'Asistencia registrada.', 'success');
+                await cargarClases();
+            } catch (err) {
+                mostrarToast(err.message, 'danger');
+            }
+        }
+
+        /* ---------- Filtros ---------- */
+        document.querySelectorAll('.filtro-grupo').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filtro-grupo').forEach(b => b.classList.remove('fw-bold'));
+                btn.classList.add('fw-bold');
+                const f = btn.dataset.filtro;
+                document.querySelectorAll('.grupo-clase').forEach(g => {
+                    g.style.display = (f === 'todos' || g.dataset.estado === f) ? '' : 'none';
+                });
+            });
+        });
+
+        /* ---------- Init ---------- */
+        document.addEventListener('DOMContentLoaded', cargarClases);
+    </script>
+</body>
+</html>
