@@ -1,0 +1,13 @@
+# Archivos subidos por usuarios (Kardex PDF)
+Backend/uploads/kardex/*
+!Backend/uploads/kardex/.gitkeep
+
+# Variables de entorno y configuración local
+.env
+Backend/config/local.php
+
+# Sistema operativo / Editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -120,7 +120,7 @@ CREATE TABLE Horarios (
     FOREIGN KEY (id_turno) REFERENCES Turnos(id_turno) ON DELETE RESTRICT,
     UNIQUE KEY uq_tutor_fecha_turno (id_tutor, fecha, id_turno),
     UNIQUE KEY uq_fecha_turno_aula (fecha, id_turno, aula),
-    CHECK (cupo >= 1)
+    CHECK (cupo BETWEEN 1 AND 30)
 );
 
 -- Citas reservadas por los alumnos (Tabla asociativa con PK compuesta).
